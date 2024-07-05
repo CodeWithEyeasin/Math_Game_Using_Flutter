@@ -28,22 +28,22 @@ class _MathGameScreenState extends State<MathGameScreen> {
     '.',
     '-',
     'NEW',
-
   ];
   late final VoidCallback onTap;
   var buttonColor = const Color(0xFF323D6B);
   final Random _random = Random();
   late int _num1;
   late int _num2;
-  late double correctAnswer;
+  late num correctAnswer;
   late String _operator;
   late String _question;
   String _userAnswer = '';
 
   int _score = 0;
 
-  final Color _questionColor =  const Color(0xFF323D5B);
+  final Color _questionColor = const Color(0xFF323D5B);
   final List<Map<String, dynamic>> _scoreHistory = [];
+  String _currentDifficulty = 'Easy';
 
   @override
   void initState() {
@@ -51,9 +51,9 @@ class _MathGameScreenState extends State<MathGameScreen> {
     _generateQuestion(); // Initialize the question
   }
 
-  void _generateQuestion([String difficulty = 'Easy']) {
+  void _generateQuestion() {
     int maxNumber;
-    switch (difficulty) {
+    switch (_currentDifficulty) {
       case 'Hard':
         maxNumber = 1000;
         break;
@@ -78,96 +78,118 @@ class _MathGameScreenState extends State<MathGameScreen> {
   void _checkAnswer() {
     switch (_operator) {
       case '+':
-        correctAnswer = _num1 + _num2.toDouble();
+        correctAnswer = _num1 + _num2;
         break;
       case '-':
-        correctAnswer = _num1 - _num2.toDouble();
+        correctAnswer = _num1 - _num2;
         break;
       case '*':
-        correctAnswer = _num1 * _num2.toDouble();
+        correctAnswer = _num1 * _num2;
         break;
       case '/':
-        correctAnswer = _num1 / _num2.toDouble();
+        correctAnswer = _num1 / _num2;
         break;
     }
     setState(() {
-      if (double.tryParse(_userAnswer) == correctAnswer) {
+      if (_isAnswerCorrect(double.tryParse(_userAnswer))) {
         _score++;
-        showDialog(context: context, builder: (context){
-          return AlertDialog(
-            backgroundColor:  const Color(0xFF323D5B),
-            content: SizedBox(height: 200,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  const Text('Correct!',style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 30,
-                    color: Colors.white
-                  ),),
-
-                  GestureDetector(
-                    onTap: (){
-                      _generateQuestion();
-                      Navigator.of(context).pop();
-                      setState(() {
-                        _userAnswer = '';
-                      });
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.all(4),
-                      decoration: BoxDecoration(
-                        color: Colors.green,
-                        borderRadius: BorderRadius.circular(8)
+        showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              backgroundColor: const Color(0xFF323D5B),
+              content: SizedBox(
+                height: 200,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    const Text(
+                      'Correct!',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 30,
+                        color: Colors.white,
                       ),
-                      child: const Icon(Icons.arrow_forward,color: Colors.white,size: 24,),
                     ),
-                  ),
-
-                ],
+                    GestureDetector(
+                      onTap: () {
+                        _generateQuestion();
+                        Navigator.of(context).pop();
+                        setState(() {
+                          _userAnswer = '';
+                        });
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: Colors.green,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Icon(
+                          Icons.arrow_forward,
+                          color: Colors.white,
+                          size: 24,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          );
-        });
+            );
+          },
+        );
       } else {
-        // _questionColor = Colors.red;
-        showDialog(context: context, builder: (context) {
-          return AlertDialog(
-            backgroundColor: const Color(0xFF323D5B),
-            content: SizedBox(height: 200,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  const Text('Sorry try again!', style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 30,
-                      color: Colors.white
-                  ),),
-
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.of(context).pop();
-                      setState(() {
-                        _userAnswer = '';
-                      });
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.all(4),
-                      decoration: BoxDecoration(
-                          color: Colors.red,
-                          borderRadius: BorderRadius.circular(8)
+        showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              backgroundColor: const Color(0xFF323D5B),
+              content: SizedBox(
+                height: 200,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    const Text(
+                      'Sorry, try again!',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 30,
+                        color: Colors.white,
                       ),
-                      child: const Icon(Icons.rotate_left, color: Colors.white,
-                        size: 24,),
                     ),
-                  ),
-
-                ],
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.of(context).pop();
+                        setState(() {
+                          _userAnswer = '';
+                        });
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: Colors.red,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Icon(
+                          Icons.rotate_left,
+                          color: Colors.white,
+                          size: 24,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          );
-        });
-    }});
+            );
+          },
+        );
+      }
+    });
+  }
+
+  bool _isAnswerCorrect(num? userAnswer) {
+    if (userAnswer == null) return false;
+    return (userAnswer - correctAnswer).abs() < 0.0001;
   }
 
   void _endGame() {
@@ -182,29 +204,29 @@ class _MathGameScreenState extends State<MathGameScreen> {
     });
   }
 
-
-  void buttonTapped(String button){
+  void buttonTapped(String button) {
     setState(() {
-      if(button == '='){
+      if (button == '=') {
         _checkAnswer();
-      }
-      else if(button == 'NEW'){
+      } else if (button == 'NEW') {
         _userAnswer = '';
         _generateQuestion();
-        if(_score > 0){
-          _score--;
+        if (correctAnswer <= 0) {
+          _score;
+        } else if (correctAnswer > 0) {
+          if (_score > 0) {
+            _score--;
+          }
         }
-      }
-      else if(button == 'C'){
+      } else if (button == 'C') {
         _userAnswer = '';
-      }else if(button == 'DEL'){
-        if(_userAnswer.isNotEmpty){
-          _userAnswer = _userAnswer.substring(0,_userAnswer.length -1);
+      } else if (button == 'DEL') {
+        if (_userAnswer.isNotEmpty) {
+          _userAnswer = _userAnswer.substring(0, _userAnswer.length - 1);
         }
-      }else if(_userAnswer.length <7){
+      } else if (_userAnswer.length < 7) {
         _userAnswer = _userAnswer + button;
       }
-
     });
   }
 
@@ -221,7 +243,7 @@ class _MathGameScreenState extends State<MathGameScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                 Text(
+                Text(
                   widget.playerName,
                   style: const TextStyle(
                     fontSize: 24,
@@ -243,16 +265,24 @@ class _MathGameScreenState extends State<MathGameScreen> {
                 ),
                 PopupMenuButton<String>(
                   color: const Color(0xFF323D5B),
-                  onSelected: (value) => _generateQuestion(value),
+                  onSelected: (value) {
+                    setState(() {
+                      _currentDifficulty = value;
+                    });
+                    _generateQuestion();
+                  },
                   itemBuilder: (BuildContext context) {
                     return {'Easy', 'Medium', 'Hard'}.map((String choice) {
                       return PopupMenuItem<String>(
                         value: choice,
-                        child: Text(choice,style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold
-                        ),),
+                        child: Text(
+                          choice,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       );
                     }).toList();
                   },
@@ -270,12 +300,12 @@ class _MathGameScreenState extends State<MathGameScreen> {
               color: Colors.white,
             ),
           ),
-          const SizedBox(height: 16,),
+          const SizedBox(height: 16),
           Expanded(
             child: Container(
               decoration: BoxDecoration(
-                  color: _questionColor,
-                  borderRadius: BorderRadius.circular(10)
+                color: _questionColor,
+                borderRadius: BorderRadius.circular(10),
               ),
               child: Center(
                 child: Row(
@@ -284,9 +314,9 @@ class _MathGameScreenState extends State<MathGameScreen> {
                     Text(
                       _question,
                       style: const TextStyle(
-                          fontSize: 32,
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold
+                        fontSize: 32,
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                     Container(
@@ -297,11 +327,14 @@ class _MathGameScreenState extends State<MathGameScreen> {
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Center(
-                        child: Text(_userAnswer, style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 30,
-                          fontWeight: FontWeight.bold
-                        ),),
+                        child: Text(
+                          _userAnswer,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 30,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
                     ),
                   ],
@@ -309,44 +342,50 @@ class _MathGameScreenState extends State<MathGameScreen> {
               ),
             ),
           ),
-          const SizedBox(width: 16,),
+          const SizedBox(width: 16),
           Expanded(
             flex: 3,
-              child: GridView.builder(
-                itemCount: numberPad.length,
-                  physics: const NeverScrollableScrollPhysics(),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 4),
-                  itemBuilder: (context,index){
-                    return Padding(
-                      padding: const EdgeInsets.all(4),
-                      child: GestureDetector(
-                        onTap: (){
-                          buttonTapped(numberPad[index]);
-                        },
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color:  buttonColor,
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Center(
-                            child: Text(numberPad[index],style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 32
-                            ),),
+            child: GridView.builder(
+              itemCount: numberPad.length,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 4,
+              ),
+              itemBuilder: (context, index) {
+                return Padding(
+                  padding: const EdgeInsets.all(4),
+                  child: GestureDetector(
+                    onTap: () {
+                      buttonTapped(numberPad[index]);
+                    },
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: buttonColor,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Center(
+                        child: Text(
+                          numberPad[index],
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 32,
                           ),
                         ),
                       ),
-                    );
-                  })),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
           Padding(
-            padding: const EdgeInsets.symmetric(vertical:25),
+            padding: const EdgeInsets.symmetric(vertical: 25),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 GestureDetector(
-                  onTap: (){
+                  onTap: () {
                     Navigator.pop(context);
                   },
                   child: Container(
@@ -356,16 +395,17 @@ class _MathGameScreenState extends State<MathGameScreen> {
                     ),
                     padding: const EdgeInsets.symmetric(vertical: 17, horizontal: 20),
                     child: const Text(
-                      'Start Again',style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
+                      'Start Again',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                 ),
                 GestureDetector(
-                  onTap: (){
+                  onTap: () {
                     _endGame();
                   },
                   child: Container(
@@ -375,18 +415,18 @@ class _MathGameScreenState extends State<MathGameScreen> {
                     ),
                     padding: const EdgeInsets.symmetric(vertical: 17, horizontal: 20),
                     child: const Text(
-                      'End Game',style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
+                      'End Game',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                 ),
               ],
             ),
           ),
-
         ],
       ),
     );
