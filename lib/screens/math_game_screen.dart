@@ -242,12 +242,17 @@ class _MathGameScreenState extends State<MathGameScreen> {
                   icon: const Icon(Icons.history_sharp, color: Colors.white, size: 30),
                 ),
                 PopupMenuButton<String>(
+                  color: const Color(0xFF323D5B),
                   onSelected: (value) => _generateQuestion(value),
                   itemBuilder: (BuildContext context) {
                     return {'Easy', 'Medium', 'Hard'}.map((String choice) {
                       return PopupMenuItem<String>(
                         value: choice,
-                        child: Text(choice),
+                        child: Text(choice,style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold
+                        ),),
                       );
                     }).toList();
                   },
