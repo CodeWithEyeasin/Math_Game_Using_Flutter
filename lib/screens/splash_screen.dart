@@ -38,14 +38,14 @@ class _SplashScreenState extends State<SplashScreen> {
                 child: Image.asset('assets/images/logo.png',)),
             const Text('Math Game',style: TextStyle(
                 fontWeight: FontWeight.bold,
-                fontSize: 35,
+                fontSize: 45,
                 color: Colors.white
             ),),
             const SizedBox(height: 16,),
             Column(
               children: [
                 Center(
-                  child: LoadingAnimationWidget.discreteCircle(color: Colors.white, size: 30),
+                  child: LoadingAnimationWidget.discreteCircle(color: Colors.white, size: 40),
                 )
               ],
             ),
