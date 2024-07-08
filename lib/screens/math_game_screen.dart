@@ -1,6 +1,5 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:math_game/const.dart';
 import 'package:math_game/utility/message_result.dart';
 import 'package:math_game/utility/my_button.dart';
 
@@ -12,7 +11,7 @@ class MathGameScreen extends StatefulWidget {
 }
 
 class _MathGameScreenState extends State<MathGameScreen> {
-  // number pad list
+  // Number pad list
   List<String> numberPad = [
     '7', '8', '9', 'C',
     '4', '5', '6', 'DEL',
@@ -20,110 +19,114 @@ class _MathGameScreenState extends State<MathGameScreen> {
     '0',
   ];
 
-  // number A, number B, operator
+  // Initial values
   int numberA = 1;
   int numberB = 1;
   String operator = '+';
-
-  // user answer
   String userAnswer = '';
+  int correctAnswersInRow = 0;
+  int currentLevel = 1;
 
-  // user tapped a button
+  // Random number generator
+  var randomNumber = Random();
+
+  @override
+  void initState() {
+    super.initState();
+    generateQuestion();
+  }
+
+  // Generate a new question
+  void generateQuestion() {
+    setState(() {
+      numberA = randomNumber.nextInt(10 * currentLevel) + 1;
+      numberB = randomNumber.nextInt(10 * currentLevel) + 1;
+      operator = ['+', '×'][randomNumber.nextInt(2)]; // Only addition and multiplication for positive results
+
+      // Ensure division results in a positive integer
+      if (operator == '*' || (operator == '+' && numberA > numberB)) {
+        // No need to adjust for multiplication or addition with larger number
+      } else {
+        numberA = max(numberA, numberB);
+      }
+    });
+  }
+
+  // Handle button taps
   void buttonTapped(String button) {
     setState(() {
       if (button == '=') {
-        // calculate if user is correct or incorrect
         checkResult();
       } else if (button == 'C') {
-        // clear the input
         userAnswer = '';
       } else if (button == 'DEL') {
-        // delete the last number
         if (userAnswer.isNotEmpty) {
           userAnswer = userAnswer.substring(0, userAnswer.length - 1);
         }
       } else if (userAnswer.length < 3) {
-        // maximum of 3 numbers can be inputted
         userAnswer += button;
       }
     });
   }
 
-  // check if user is correct or not
+  // Check user's answer
   void checkResult() {
-    int correctAnswer;
-    switch (operator) {
-      case '+':
-        correctAnswer = numberA + numberB;
-        break;
-      case '-':
-        correctAnswer = numberA - numberB;
-        break;
-      case '*':
-        correctAnswer = numberA * numberB;
-        break;
-      case '/':
-        correctAnswer = numberA ~/ numberB; // Integer division
-        break;
-      default:
-        correctAnswer = 0;
-    }
+    int correctAnswer = calculateCorrectAnswer();
 
     if (correctAnswer == int.parse(userAnswer)) {
-      showDialog(
-        context: context,
-        builder: (context) {
-          return ResultMessage(
-            message: 'Correct!',
-            onTap: goToNextQuestion,
-            icon: Icons.arrow_forward,
-          );
-        },
-      );
+      correctAnswersInRow++;
+      if (correctAnswersInRow == 5) {
+        currentLevel++;
+        correctAnswersInRow = 0;
+        showResultDialog('Congratulations! You reached Level\n $currentLevel', Icons.arrow_forward, goToNextQuestion);
+      } else {
+        showResultDialog('Correct!', Icons.arrow_forward, goToNextQuestion);
+      }
     } else {
-      showDialog(
-        context: context,
-        builder: (context) {
-          return ResultMessage(
-            message: 'Sorry, try again',
-            onTap: goBackToQuestion,
-            icon: Icons.rotate_left,
-          );
-        },
-      );
+      correctAnswersInRow = 0;
+      showResultDialog('Sorry, try again', Icons.rotate_left, goBackToQuestion);
     }
   }
 
-  // create random numbers and operator
-  var randomNumber = Random();
+  // Calculate correct answer based on current question
+  int calculateCorrectAnswer() {
+    switch (operator) {
+      case '+':
+        return numberA + numberB;
+      case '-':
+        return numberA - numberB;
+      case '×':
+        return numberA * numberB;
+      case '/':
+        return numberA ~/ numberB;
+      default:
+        return 0;
+    }
+  }
 
-  // GO TO NEXT QUESTION
+  // Show result dialog
+  void showResultDialog(String message, IconData icon, Function() onTap) {
+    showDialog(
+      context: context,
+      builder: (context) => ResultMessage(
+        message: message,
+        onTap: onTap,
+        icon: icon,
+      ),
+    );
+  }
+
+  // Go to next question
   void goToNextQuestion() {
-    // dismiss alert dialog
     Navigator.of(context).pop();
-
-    // reset values
     setState(() {
       userAnswer = '';
     });
-
-    // create a new question
-    numberA = randomNumber.nextInt(10) + 1; // Avoid zero for division
-    numberB = randomNumber.nextInt(10) + 1; // Avoid zero for division
-
-    // random operator
-    List<String> operators = ['+', '-', '*', '/'];
-    operator = operators[randomNumber.nextInt(operators.length)];
-
-    // Ensure the division results in an integer
-    if (operator == '/') {
-      numberA = (numberA ~/ numberB) * numberB; // Make sure numberA is divisible by numberB
-    }
+    generateQuestion();
   }
 
-  // GO BACK TO QUESTION
+  // Go back to question
   void goBackToQuestion() {
-    // dismiss alert dialog
     Navigator.of(context).pop();
   }
 
@@ -133,47 +136,86 @@ class _MathGameScreenState extends State<MathGameScreen> {
       backgroundColor: Colors.deepPurple[300],
       body: Column(
         children: [
-          // level progress, player needs 5 correct answers in a row to proceed to next level
+          // Level display
           Container(
-            height: 160,
+            height: 60,
             color: Colors.deepPurple,
-          ),
-
-          // question
-          Expanded(
-            child: Container(
-              child: Center(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // question
-                    Text(
-                      '$numberA $operator $numberB = ',
-                      style: whiteTextStyle,
+            child: Center(
+              child: Column(
+                children: [
+                  const Spacer(),
+                  Text(
+                    'Level $currentLevel',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
                     ),
-
-                    // answer box
-                    Container(
-                      height: 50,
-                      width: 100,
-                      decoration: BoxDecoration(
-                        color: Colors.deepPurple[400],
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Center(
-                        child: Text(
-                          userAnswer,
-                          style: whiteTextStyle,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ),
 
-          // number pad
+          // Level progress indicator
+          Container(
+            height: 100,
+            color: Colors.deepPurple,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: List.generate(5, (index) {
+                return Container(
+                  height: 60,
+                  width: 60,
+                  decoration: BoxDecoration(
+                    color: index < correctAnswersInRow ? Colors.green : Colors.deepPurple.shade300,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: index < correctAnswersInRow ? const Icon(Icons.check, color: Colors.white, size: 50) : null,
+                );
+              }),
+            ),
+          ),
+
+          // Question display
+          Expanded(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Question text
+                Text(
+                  '$numberA $operator $numberB = ',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 45,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+
+                // Answer box
+                Container(
+                  height: 70,
+                  width: 120,
+                  decoration: BoxDecoration(
+                    color: Colors.deepPurple[400],
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Center(
+                    child: Text(
+                      userAnswer,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 45,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // Number pad
           Expanded(
             flex: 2,
             child: Padding(

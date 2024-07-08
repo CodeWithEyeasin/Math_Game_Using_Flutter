@@ -25,14 +25,18 @@ class ResultMessage extends StatelessWidget {
             // the result
             Text(
               message,
-              style: whiteTextStyle,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 30
+              ),
             ),
-
+            const SizedBox(height: 10),
             // button to go to next question
             GestureDetector(
               onTap: onTap,
               child: Container(
-                padding: EdgeInsets.all(4),
+                padding: const EdgeInsets.all(4),
                 decoration: BoxDecoration(
                   color: Colors.deepPurple[300],
                   borderRadius: BorderRadius.circular(8),
@@ -40,6 +44,7 @@ class ResultMessage extends StatelessWidget {
                 child: Icon(
                   icon,
                   color: Colors.white,
+                  size: 30,
                 ),
               ),
             ),
