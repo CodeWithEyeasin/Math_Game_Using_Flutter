@@ -16,7 +16,7 @@ class _MathGameScreenState extends State<MathGameScreen> {
     '7', '8', '9', 'C',
     '4', '5', '6', 'DEL',
     '1', '2', '3', '=',
-    '0',
+    '0', '-',
   ];
 
   // Initial values
@@ -41,13 +41,12 @@ class _MathGameScreenState extends State<MathGameScreen> {
     setState(() {
       numberA = randomNumber.nextInt(10 * currentLevel) + 1;
       numberB = randomNumber.nextInt(10 * currentLevel) + 1;
-      operator = ['+', '×'][randomNumber.nextInt(2)]; // Only addition and multiplication for positive results
+      operator = ['+', '-', '×', '÷'][randomNumber.nextInt(4)]; // Addition, subtraction, multiplication, division
 
       // Ensure division results in a positive integer
-      if (operator == '*' || (operator == '+' && numberA > numberB)) {
-        // No need to adjust for multiplication or addition with larger number
-      } else {
-        numberA = max(numberA, numberB);
+      if (operator == '÷' && numberA % numberB != 0) {
+        int remainder = numberA % numberB;
+        numberA += (numberB - remainder); // Adjust numberA to ensure integer division
       }
     });
   }
@@ -97,7 +96,7 @@ class _MathGameScreenState extends State<MathGameScreen> {
         return numberA - numberB;
       case '×':
         return numberA * numberB;
-      case '/':
+      case '÷':
         return numberA ~/ numberB;
       default:
         return 0;
