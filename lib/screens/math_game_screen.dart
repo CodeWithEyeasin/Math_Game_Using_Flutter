@@ -199,7 +199,7 @@ class _MathGameScreenState extends State<MathGameScreen> {
         children: [
           // Level display
           Container(
-            height: 60,
+            height: 75,
             color: Colors.deepPurple,
             child: Center(
               child: Column(
