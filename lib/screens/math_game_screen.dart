@@ -1,10 +1,9 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:math_game/utility/message_result.dart';
 import 'package:math_game/utility/my_button.dart';
 
 class MathGameScreen extends StatefulWidget {
-  const MathGameScreen({Key? key}) : super(key: key);
+  const MathGameScreen({super.key});
 
   @override
   State<MathGameScreen> createState() => _MathGameScreenState();
@@ -77,13 +76,13 @@ class _MathGameScreenState extends State<MathGameScreen> {
       if (correctAnswersInRow == 5) {
         currentLevel++;
         correctAnswersInRow = 0;
-        showResultDialog('Congratulations! You reached Level\n $currentLevel', Icons.arrow_forward, goToNextQuestion);
+        showResultDialog('Congratulations!\n You reached Level $currentLevel', true);
       } else {
-        showResultDialog('Correct!', Icons.arrow_forward, goToNextQuestion);
+        showResultDialog('Correct answer!', true);
       }
     } else {
       correctAnswersInRow = 0;
-      showResultDialog('Sorry, try again', Icons.rotate_left, goBackToQuestion);
+      showResultDialog('Wrong answer', false);
     }
   }
 
@@ -104,30 +103,93 @@ class _MathGameScreenState extends State<MathGameScreen> {
   }
 
   // Show result dialog
-  void showResultDialog(String message, IconData icon, Function() onTap) {
+  void showResultDialog(String message, bool isCorrect) {
+    int correctAnswer = calculateCorrectAnswer(); // Get the correct answer
+
     showDialog(
       context: context,
-      builder: (context) => ResultMessage(
-        message: message,
-        onTap: onTap,
-        icon: icon,
+      barrierDismissible: false,
+      builder: (context) => Dialog(
+        elevation: 10,
+        backgroundColor: Colors.transparent,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 500),
+          curve: Curves.easeInOut,
+          width: MediaQuery.of(context).size.width * 0.7,
+          height: MediaQuery.of(context).size.height * 0.3,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Spacer(),
+              Icon(
+                isCorrect ? Icons.check_circle : Icons.cancel,
+                color: isCorrect ? Colors.green : Colors.red,
+                size: 80,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                message,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: isCorrect ? Colors.green : Colors.red,
+                ),
+              ),
+              if (!isCorrect) // Show correct answer only if the answer is incorrect
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  child: Text(
+                    'Correct answer: $correctAnswer',
+                    style: const TextStyle(
+                      fontSize: 18,
+                      color: Colors.green,
+                      fontWeight: FontWeight.bold
+                    ),
+                  ),
+                ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  elevation: 2
+                ),
+                onPressed: () {
+                  Navigator.pop(context); // Close the dialog
+                  if (isCorrect) {
+                    goToNextQuestion();
+                  } else {
+                    goToNextQuestion(); // Optionally handle incorrect answer behavior here
+                  }
+                },
+                child: const Text(
+                  'OK',
+                  style: TextStyle(fontSize: 18),
+                ),
+              ),
+              const Spacer(),
+            ],
+          ),
+        ),
       ),
     );
   }
 
   // Go to next question
   void goToNextQuestion() {
-    Navigator.of(context).pop();
     setState(() {
       userAnswer = '';
     });
     generateQuestion();
   }
 
-  // Go back to question
-  void goBackToQuestion() {
-    Navigator.of(context).pop();
-  }
+  // // Go back to question
+  // void goBackToQuestion() {
+  //   Navigator.pop(context);
+  // }
 
   @override
   Widget build(BuildContext context) {

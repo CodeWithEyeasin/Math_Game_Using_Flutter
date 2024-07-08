@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../const.dart';
 
 class ResultMessage extends StatelessWidget {
   final String message;
