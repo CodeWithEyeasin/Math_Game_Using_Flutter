@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
-import 'package:math_game/screens/player_name_screen.dart';
+import 'package:math_game/screens/math_game_screen.dart';
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
@@ -18,13 +18,13 @@ class _SplashScreenState extends State<SplashScreen> {
 
   Future<void> _moveToNextScreen() async {
     await Future.delayed(const Duration(seconds: 4));
-    Navigator.push(context, MaterialPageRoute(builder: (context)=>const PlayerNameScreen()));
+    Navigator.push(context, MaterialPageRoute(builder: (context)=>const MathGameScreen()));
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF323D5B),
+      backgroundColor: Colors.deepPurple.shade300,
       body: Center(
         child: Column(
           children: [
